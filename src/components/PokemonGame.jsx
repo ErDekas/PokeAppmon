@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { getAuth } from 'firebase/auth'
+import { getAuth } from 'firebase/auth';
+import { RankingSlider } from './RankingSlider';
 import { doc, getFirestore, updateDoc, getDoc } from 'firebase/firestore'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -191,6 +192,7 @@ export const PokemonGame = () => {
           )}
         </div>
       </div>
+      <RankingSlider />
     </div>
   );
 };
