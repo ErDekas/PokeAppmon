@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { RankingSlider } from './RankingSlider';
 import * as Tone from 'tone';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -21,9 +22,9 @@ export const PokemonRhythm = () => {
   const CANVAS_HEIGHT = 600;
   const BASE_NOTE_SPEED = 5;
   const MAX_MISSED = 5;
-  const SPEED_INCREASE_INTERVAL = 30000; // 30 segundos
-  const SPEED_INCREASE_AMOUNT = 0.2;
-  const BASE_POINTS = 100;
+  let SPEED_INCREASE_INTERVAL = 30000; // 30 segundos
+  let SPEED_INCREASE_AMOUNT = 0.2;
+  let BASE_POINTS = 100;
 
   const currentScoreRef = useRef(0);
   const canvasRef = useRef(null);
@@ -427,9 +428,8 @@ export const PokemonRhythm = () => {
           <button 
             className="btn btn-primary btn-lg mt-3" 
             onClick={startGame} 
-            disabled={!isAudioLoaded}
           >
-            {isAudioLoaded ? 'Start Game' : 'Loading audio...'}
+           Start Game
           </button>
         </div>
       ) : gameOver ? (
@@ -465,6 +465,7 @@ export const PokemonRhythm = () => {
               ))}
             </div>
           </div>
+        <RankingSlider />
         </div>
       )}
     </div>
