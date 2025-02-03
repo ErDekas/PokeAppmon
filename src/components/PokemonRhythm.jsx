@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase';
-import { RankingSlider } from './RankingSlider';
-import * as Tone from 'tone';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect, useRef } from "react";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import { RankingSlider } from "./RankingSlider";
+import * as Tone from "tone";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export const PokemonRhythm = () => {
   const [score, setScore] = useState(0);
@@ -39,24 +39,27 @@ export const PokemonRhythm = () => {
     const notes = [];
     const notesPerSecond = 8;
     const secondsToGenerate = 5; // Generar 5 segundos de notas por adelantado
-    
-    for (let second = startTime; second < startTime + secondsToGenerate; second++) {
+
+    for (
+      let second = startTime;
+      second < startTime + secondsToGenerate;
+      second++
+    ) {
       for (let i = 0; i < notesPerSecond; i++) {
-        const timeInTenths = Math.floor((i/notesPerSecond) * 10);
+        const timeInTenths = Math.floor((i / notesPerSecond) * 10);
         notes.push({
           time: `${second}:${timeInTenths}`,
-          lane: Math.floor(Math.random() * 4)
+          lane: Math.floor(Math.random() * 4),
         });
       }
     }
-    
+
     return notes.sort((a, b) => {
-      const [secA, tenthA] = a.time.split(':').map(Number);
-      const [secB, tenthB] = b.time.split(':').map(Number);
+      const [secA, tenthA] = a.time.split(":").map(Number);
+      const [secB, tenthB] = b.time.split(":").map(Number);
       return secA === secB ? tenthA - tenthB : secA - secB;
     });
   };
-
 
   // Definir la estructura de notas de la canción
   const setupSongNotes = () => {
@@ -65,53 +68,53 @@ export const PokemonRhythm = () => {
       let currentSecond = 0;
       let totalNotes = 0;
       const usedTimesMap = new Map(); // Mapa para rastrear tiempos ocupados
-      
+
       // Distribuir 344 notas en 43 segundos
       while (currentSecond < 43 && totalNotes < 344) {
         // Para cada segundo, generar 8 notas
         for (let i = 0; i < 8 && totalNotes < 344; i++) {
           // Calcular el tiempo exacto para esta nota
-          const timeInTenths = Math.floor((i/8) * 10);
+          const timeInTenths = Math.floor((i / 8) * 10);
           const timeKey = `${currentSecond}:${timeInTenths}`;
-          
+
           // Si este tiempo ya está ocupado, intentar el siguiente
           if (usedTimesMap.has(timeKey)) {
             continue;
           }
-          
+
           // Generar un carril del 0 al 3
           const lane = Math.floor(Math.random() * 4); // Ahora genera del 0 al 3
-          
+
           // Registrar este tiempo como ocupado
           usedTimesMap.set(timeKey, true);
-          
+
           notes.push({ time: timeKey, lane });
           totalNotes++;
         }
         currentSecond++;
       }
-      
+
       // Ordenar las notas por tiempo
       return notes.sort((a, b) => {
-        const [secA, tenthA] = a.time.split(':').map(Number);
-        const [secB, tenthB] = b.time.split(':').map(Number);
+        const [secA, tenthA] = a.time.split(":").map(Number);
+        const [secB, tenthB] = b.time.split(":").map(Number);
         return secA === secB ? tenthA - tenthB : secA - secB;
       });
     };
-    
+
     // Generar el patrón de notas
     return [
       // === INTRODUCCIÓN (0:00 - 0:43) ===
-      ...generateNotes()
+      ...generateNotes(),
     ];
   };
 
   const createSongNoteChart = () => {
     const songNotes = setupSongNotes(); // Genera el patrón inicial de notas
-    
+
     return {
       songNotes,
-      getInfiniteNotes: (startTime) => generateInfiniteNotes(startTime)
+      getInfiniteNotes: (startTime) => generateInfiniteNotes(startTime),
     };
   };
 
@@ -132,7 +135,7 @@ export const PokemonRhythm = () => {
           if (playerRef.current) {
             playerRef.current.playbackRate = 1;
           }
-        }
+        },
       }).toDestination();
 
       // Obtener la duración de la canción en segundos
@@ -149,7 +152,7 @@ export const PokemonRhythm = () => {
   useEffect(() => {
     setupAudio();
     return () => {
-      if(playerRef.current) {
+      if (playerRef.current) {
         playerRef.current.stop();
         playerRef.current.dispose();
       }
@@ -160,14 +163,14 @@ export const PokemonRhythm = () => {
     const fetchHighScore = async () => {
       const user = auth.currentUser;
       if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
+        const userDocRef = doc(db, "users", user.uid);
         try {
           const docSnap = await getDoc(userDocRef);
           if (docSnap.exists() && docSnap.data().rhythmInvadersScore) {
             setHighScore(docSnap.data().rhythmInvadersScore);
           }
         } catch (error) {
-          console.error('Error fetching high score:', error);
+          console.error("Error fetching high score:", error);
         }
       }
     };
@@ -180,7 +183,9 @@ export const PokemonRhythm = () => {
       const sprites = {};
       for (const pokemonId of POKEMON_IDS) {
         try {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+          const response = await fetch(
+            `https://pokeapi.co/api/v2/pokemon/${pokemonId}`
+          );
           const data = await response.json();
           sprites[pokemonId] = data.sprites.front_default;
         } catch (error) {
@@ -203,16 +208,16 @@ export const PokemonRhythm = () => {
     setSpeedMultiplier(1);
     currentSpeedRef.current = 1;
     setNotes([]);
-  
+
     setTimeout(() => {
       if (playerRef.current) {
         playerRef.current.playbackRate = 1; // Asegurar que empiece a velocidad normal
         playerRef.current.start();
         songStartTimeRef.current = Date.now();
-        
+
         // Configurar el intervalo de aumento de velocidad
         speedIncreaseIntervalRef.current = setInterval(() => {
-          setSpeedMultiplier(prev => {
+          setSpeedMultiplier((prev) => {
             const newSpeed = prev + SPEED_INCREASE_AMOUNT;
             if (playerRef.current) {
               playerRef.current.playbackRate = newSpeed;
@@ -223,49 +228,51 @@ export const PokemonRhythm = () => {
         }, SPEED_INCREASE_INTERVAL);
       }
     }, 1000);
-  
+
     startGameLoop();
   };
-  
+
   const startGameLoop = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-  
-    const ctx = canvas.getContext('2d');
+
+    const ctx = canvas.getContext("2d");
     let noteGenerationCounter = 0;
-  
+
     gameLoopRef.current = setInterval(() => {
       // Generar nuevas notas de forma gradual
-      if (noteGenerationCounter % 30 === 0) { // Ajusta este valor para controlar la frecuencia
+      if (noteGenerationCounter % 30 === 0) {
+        // Ajusta este valor para controlar la frecuencia
         setNotes((prevNotes) => {
           // Limitar el número máximo de notas en pantalla
-          const maxNotes = 50; 
+          const maxNotes = 50;
           if (prevNotes.length >= maxNotes) {
             return prevNotes;
           }
-  
+
           // Generar una nueva nota
           const newNote = {
             lane: Math.floor(Math.random() * 4),
             y: -50,
-            pokemonId: POKEMON_IDS[Math.floor(Math.random() * POKEMON_IDS.length)],
-            id: Date.now() + Math.random()
+            pokemonId:
+              POKEMON_IDS[Math.floor(Math.random() * POKEMON_IDS.length)],
+            id: Date.now() + Math.random(),
           };
-  
+
           return [...prevNotes, newNote];
         });
       }
       noteGenerationCounter++;
-  
+
       // Limpiar y dibujar el canvas
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      
+
       // Dibujar fondo
-      ctx.fillStyle = 'black';
+      ctx.fillStyle = "black";
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  
+
       // Dibujar carriles
-      ctx.strokeStyle = 'white';
+      ctx.strokeStyle = "white";
       ctx.lineWidth = 2;
       for (let i = 1; i < LANES; i++) {
         const x = i * (CANVAS_WIDTH / LANES);
@@ -274,21 +281,21 @@ export const PokemonRhythm = () => {
         ctx.lineTo(x, CANVAS_HEIGHT);
         ctx.stroke();
       }
-  
+
       // Línea de golpeo
-      ctx.strokeStyle = 'red';
+      ctx.strokeStyle = "red";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, CANVAS_HEIGHT - 100);
       ctx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - 100);
       ctx.stroke();
-  
+
       // Actualizar y dibujar notas
       setNotes((prevNotes) => {
         const updatedNotes = prevNotes
-          .map((note) => ({ 
-            ...note, 
-            y: note.y + (BASE_NOTE_SPEED * currentSpeedRef.current) 
+          .map((note) => ({
+            ...note,
+            y: note.y + BASE_NOTE_SPEED * currentSpeedRef.current + SPEED_INCREASE_AMOUNT,
           }))
           .filter((note) => {
             if (note.y > CANVAS_HEIGHT) {
@@ -303,51 +310,64 @@ export const PokemonRhythm = () => {
             }
             return true;
           });
-  
+
         // Dibujar notas
         updatedNotes.forEach((note) => {
           const sprite = new Image();
           sprite.src = pokemonSprites[note.pokemonId];
-          const x = note.lane * (CANVAS_WIDTH / LANES) + (CANVAS_WIDTH / LANES) / 2 - 25;
+          const x =
+            note.lane * (CANVAS_WIDTH / LANES) + CANVAS_WIDTH / LANES / 2 - 25;
           ctx.drawImage(sprite, x, note.y, 50, 50);
         });
-  
+
         return updatedNotes;
       });
     }, 16); // 60 FPS
   };
-  
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!gameActive) return;
-  
+
       switch (event.key) {
-        case 'a':
+        case "a":
           handleNoteHit(0);
           break;
-        case 's':
+        case "A":
+          handleNoteHit(0);
+          break;
+        case "s":
           handleNoteHit(1);
           break;
-        case 'd':
+        case "S":
+          handleNoteHit(1);
+          break;
+        case "d":
           handleNoteHit(2);
           break;
-        case 'f':
+        case "D":
+          handleNoteHit(2);
+          break;
+        case "f":
+          handleNoteHit(3);
+          break;
+        case "F":
           handleNoteHit(3);
           break;
         default:
           break;
       }
     };
-  
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameActive]);
 
   useEffect(() => {
     if (gameActive) {
       startGameLoop();
     }
-  
+
     return () => {
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
@@ -369,9 +389,11 @@ export const PokemonRhythm = () => {
       if (hitNoteIndex !== -1) {
         const newNotes = [...prevNotes];
         newNotes.splice(hitNoteIndex, 1);
-        
+
         // Calculate points with speed multiplier
-        const pointsWithMultiplier = Math.round(BASE_POINTS * currentSpeedRef.current);
+        const pointsWithMultiplier = Math.round(
+          BASE_POINTS * currentSpeedRef.current
+        );
         const newScore = currentScoreRef.current + pointsWithMultiplier;
         currentScoreRef.current = newScore;
         setScore(newScore);
@@ -401,19 +423,19 @@ export const PokemonRhythm = () => {
     const finalScore = currentScoreRef.current;
     const user = auth.currentUser;
     if (user) {
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, "users", user.uid);
       try {
         const docSnap = await getDoc(userDocRef);
         const currentHighScore = docSnap.data()?.rhythmInvadersScore || 0;
-        
+
         if (finalScore > currentHighScore) {
           setHighScore(finalScore);
           await updateDoc(userDocRef, {
-            rhythmInvadersScore: finalScore
+            rhythmInvadersScore: finalScore,
           });
         }
       } catch (error) {
-        console.error('Error updating score:', error);
+        console.error("Error updating score:", error);
       }
     }
   };
@@ -425,11 +447,8 @@ export const PokemonRhythm = () => {
 
       {!gameActive && !gameOver ? (
         <div>
-          <button 
-            className="btn btn-primary btn-lg mt-3" 
-            onClick={startGame} 
-          >
-           Start Game
+          <button className="btn btn-primary btn-lg mt-3" onClick={startGame}>
+            Start Game
           </button>
         </div>
       ) : gameOver ? (
@@ -451,10 +470,12 @@ export const PokemonRhythm = () => {
           />
           <div className="mt-3">
             <h3>
-              Score: {score} | Points per Hit: {Math.round(BASE_POINTS * speedMultiplier)} | Missed: {missed}/{MAX_MISSED} | Speed: {speedMultiplier.toFixed(1)}x
+              Score: {score} | Points per Hit:{" "}
+              {Math.round(BASE_POINTS * speedMultiplier)} | Missed: {missed}/
+              {MAX_MISSED} | Speed: {speedMultiplier.toFixed(1)}x
             </h3>
             <div className="btn-group">
-              {['A', 'S', 'D', 'F'].map((lane, index) => (
+              {["A", "S", "D", "F"].map((lane, index) => (
                 <button
                   key={lane}
                   className="btn btn-dark m-4"
@@ -465,9 +486,9 @@ export const PokemonRhythm = () => {
               ))}
             </div>
           </div>
-        <RankingSlider />
         </div>
       )}
+      <RankingSlider />
     </div>
   );
 };

@@ -55,7 +55,7 @@ export const Navigation = ({ isLoggedIn, setIsLoggedIn, user }) => (
           <>
             <NavLink 
               to="/login" 
-              className="nav-link text-white me-3 cursor-pointer"
+              className="btn btn-light cursor-pointer m-3"
             >
               Iniciar Sesión
             </NavLink>
